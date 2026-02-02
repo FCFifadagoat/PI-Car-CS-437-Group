@@ -1,5 +1,5 @@
 from picarx import Picarx
-import random
+#import random #Not used
 import time
 
 SafeDistance = 40
@@ -20,10 +20,12 @@ def main():
             # if something is within danger distance, stop, back up, turn a bit, and check again, until you get a clear path
             if distance <= DangerDistance:
                 px.forward(0)
+                #alt: px.stop()
                 time.sleep(0.3)
                 px.backward(MoveDistance)
                 time.sleep(0.5)
                 px.forward(0)
+                #alt: px.stop()
                 sweepangle = -30
                 found_path = False
                 while not found_path:
