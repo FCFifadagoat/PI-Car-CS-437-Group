@@ -59,6 +59,7 @@ def findGoodAngle():
     print(f"Left:{LeftDistance} | Right: {RightDistance}")
     # if the left distance is greater than the right distance, return so we can proceed forwards
     if (LeftDistance >= RightDistance):
+        px.set_dir_servo_angle(0)
         return
     else: # otherwise, reset to original position, turn left, backup, and return
         px.forward(POWER)
