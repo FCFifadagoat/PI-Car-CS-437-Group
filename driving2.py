@@ -6,7 +6,7 @@ px = Picarx()
 
 SafeDistance = 30
 DangerDistance = 20
-POWER = 50
+POWER = 35
 
 # function to get the distance using ultrasonic sensor
 def getDistance():
@@ -23,56 +23,74 @@ def getDistance():
 
 # function to find the correct direction to proceed in
 def findGoodAngle():
-    # start by backing up to make space from the danger
+    # 1) Obstacle detected → stop first (stabilize)
     px.forward(0)
-    time.sleep(.3)
+    time.sleep(0.3)
     px.backward(POWER)
-    time.sleep(.1)
+    time.sleep(0.8)
     px.forward(0)
+    time.sleep(0.3)
 
-    # turn wheels left, back up, and scan
+    # Left Scan
+    # Turn wheels left -> move slightly -> stop -> measure distance
     px.set_dir_servo_angle(-30)
-    time.sleep(0.1)
-    px.backward(POWER)
-    time.sleep(0.8)
-    px.forward(0)
-    time.sleep(0.5)
+    time.sleep(0.3)
 
-    RightDistance = getDistance()
-    
-    # reset to original position to check other angle
-    px.forward(POWER)
-    time.sleep(0.8)
-    px.forward(0)
-    time.sleep(0.5)
+    px.forward(20)
+    time.sleep(0.4)
 
-    # turn wheels right, back up, and scan
-    px.set_dir_servo_angle(30)
-    time.sleep(0.1)
-    px.backward(POWER)
-    time.sleep(0.8)
     px.forward(0)
-    time.sleep(0.5)
+    time.sleep(0.3)
 
     LeftDistance = getDistance()
-    
-    print(f"Left:{LeftDistance} | Right: {RightDistance}")
-    # if the left distance is greater than the right distance, return so we can proceed forwards
-    if (LeftDistance >= RightDistance):
-        px.set_dir_servo_angle(0)
-        return
-    else: # otherwise, reset to original position, turn left, backup, and return
-        px.forward(POWER)
-        time.sleep(0.8)
-        px.forward(0)
-        # turn wheels left and back up
+
+    # Return to original position after left scan
+    px.backward(20)
+    time.sleep(0.4)
+
+    px.forward(0)
+    time.sleep(0.3)
+
+    # Right Scan
+    # Turn wheels right -> move slightly -> stop -> measure distance
+    px.set_dir_servo_angle(30)    
+    time.sleep(0.3)
+
+    px.forward(20)
+    time.sleep(0.4)
+
+    px.forward(0)
+    time.sleep(0.3)
+
+    RightDistance = getDistance()
+
+    # Return to original positin after right scan
+    px.backward(20)
+    time.sleep(0.4)
+
+    px.forward(0)
+    time.sleep(0.3)
+
+    print(f"Left: {LeftDistance} | Right: {RightDistance}")
+
+    # Move to the safer side based on left&right distance
+    if LeftDistance >= RightDistance:
         px.set_dir_servo_angle(-30)
-        time.sleep(0.1)
-        px.backward(POWER)
-        time.sleep(0.8)
-        px.forward(0)
-        time.sleep(0.5)
-        return
+        time.sleep(0.3)
+
+        px.forward(POWER)
+        time.sleep(0.6)
+
+    else:
+        px.set_dir_servo_angle(30)
+        time.sleep(0.3)
+
+        px.forward(POWER)
+        time.sleep(0.6)
+
+    # Finally, we center the wheels
+    px.set_dir_servo_angle(0)
+    time.sleep(0.2)
 
 
 def main():
