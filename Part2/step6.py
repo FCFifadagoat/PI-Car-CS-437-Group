@@ -117,13 +117,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()            if 0 <= obstacle_x < 100 and 0 <= obstacle_y < 100:
-                grid[obstacle_y, obstacle_x] = 1
-
-        scan_angle = forward_angle + angle
+    main()
 
 
-        if is_obstacle == 1:
-            obstacle_x = int(car_x_position + distance * np.cos(np.radians(scan_angle)))
-            obstacle_y = int(car_y_position + distance * np.sin(np.radians(scan_angle)))
 
