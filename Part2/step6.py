@@ -55,9 +55,19 @@ def scanAngles():
 
 def updateGridWithMapping(angle_info):
     global car_x_position, car_y_position
+
     prev_obstacle = None
 
     for angle, distance, is_obstacle in angle_info:
+        scan_angle = forward_angle + angle
+
+        if is_obstacle == 1:
+            obstacle_x = int(car_x_position + distance * np.cos(np.radians(scan_angle)))
+            obstacle_y = int(car_y_position + distance * np.sin(np.radians(scan_angle)))
+
+            if 0 <= obstacle_x < 100 and 0 <= obstacle_y < 100:
+                grid[obstacle_y, obstacle_x] = 1
+
             if prev_obstacle is not None:
                 prev_x, prev_y = prev_obstacle
                 # - i goes from 0 to steps and i/steps is a percentage from 0 to 1, so we are interpolating between the previous obstacle and the current obstacle and marking all the points in between as obstacles.
@@ -118,6 +128,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
