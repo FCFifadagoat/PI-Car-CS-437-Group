@@ -4,9 +4,9 @@ import time
 
 
 ANGLES = [-20,-10,0,10,20]
-THRESHOLD = 30
+SafeDistance = 30
+DangerDistance = 20
 POWER = 30
-
 
 forward_angle = 0
 grid = np.zeros((100, 100))
@@ -18,62 +18,112 @@ steps = 80
 
 px= Picarx()
 
-#Part 2 , not yet finished.
+def getDistance():
+    distance = round(px.ultrasonic.read(), 2)
 
-while True:
+    # occasionally the ultrasonic sensor returns a value of -2
+    # SEE: robot-hat/robot_hat/modules.py line 45-46
+    # this is caused by if pulse_start == 0 or pulse_end == 0, which if met, indicates a timeout which can cause unexpected behavior.
+    # this can cause some issues with reading distances so if we get it, assume we are in Danger Distance
+    while (distance == -2):
+        distance = DangerDistance
+    return distance
 
+def scanAngles():
     angle_info = []
 
     for angle in ANGLES:
         px.set_dir_servo_angle(angle)
         time.sleep(0.3)
+        
         px.forward(POWER)
         time.sleep(0.3)
+
         px.stop()
-        distance = px.ultrasonic.read()
+        distance = getDistance()
 
         px.backward(POWER)
         time.sleep(0.3)
         px.stop()
 
-        if distance < THRESHOLD:
-            angle_info.append((angle,distance,1))
+        if distance < SafeDistance:
+            angle_info.append((angle, distance, 1))
         else:
-            angle_info.append((angle,distance,0))
+            angle_info.append((angle, distance, 0))
+    
+    return angle_info
 
+def updateGridWithMapping(angle_info):
+    global car_x_position, car_y_position
     prev_obstacle = None
 
     for angle, distance, is_obstacle in angle_info:
-        if is_obstacle == 1:
-            scan_angle = forward_angle + angle
-
-            obstacle_x = int(car_x_position + distance * np.cos(np.radians(scan_angle)))   # Source : https://www.google.com/search?q=howith+the+distance+and+angle%2C+how+to+get+x%2Cy+coordinates&oq=howith+the+distance+and+angle%2C+how+to+get+x%2Cy+coordinates&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIJCAEQIRgKGKABMgkIAhAhGAoYoAEyCQgDECEYChigATIJCAQQIRgKGKAB0gEINzM3N2owajeoAgCwAgA&sourceid=chrome&ie=UTF-8 (AI OVverview)
-            obstacle_y = int(car_y_position + distance * np.sin(np.radians(scan_angle)))   # Source : https://www.google.com/search?q=howith+the+distance+and+angle%2C+how+to+get+x%2Cy+coordinates&oq=howith+the+distance+and+angle%2C+how+to+get+x%2Cy+coordinates&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIJCAEQIRgKGKABMgkIAhAhGAoYoAEyCQgDECEYChigATIJCAQQIRgKGKAB0gEINzM3N2owajeoAgCwAgA&sourceid=chrome&ie=UTF-8  (AI Overview)
-
-        
-            if 0 <= obstacle_x < 100 and 0 <= obstacle_y < 100:
-                grid[obstacle_y, obstacle_x] = 1
-
             if prev_obstacle is not None:
-                    interpolated_y = int(prev_y + (obstacle_y - prev_y) * i / steps) # if i is 0, then interpolated_y will be prev_y which is the start point, and if i is steps, then interpolated_y will be obstacle_y which is end point. So this loop will fill the grid
-                    grid[interpolated_y, interpolated_x] = 1
-    
-            prev_obstacle = obstacle_x, obstacle_y
-                
-            free_x = int(car_x_position + distance * np.cos(np.radians(scan_angle)))   
-            free_y = int(car_y_position + distance * np.sin(np.radians(scan_angle)))   
+                prev_x, prev_y = prev_obstacle
+                # - i goes from 0 to steps and i/steps is a percentage from 0 to 1, so we are interpolating between the previous obstacle and the current obstacle and marking all the points in between as obstacles.
+                for i in range(steps): 
+                    interpolated_x = int(prev_x + (obstacle_x - prev_x) * i / steps)  
+                    interpolated_y = int(prev_y + (obstacle_y - prev_y) * i / steps)
+                    grid[interpolated_y, interpolated_x] = 1  # mark as obstacle 
 
-                if 0 <= free_interpolated_x < 100 and 0 <= free_interpolated_y < 100:
-                    grid[free_interpolated_y, free_interpolated_x] = 0
-            
-            prev_obstacle = None
-                            for i in range(steps):
+            prev_obstacle = (obstacle_x, obstacle_y)
+
+        if is_obstacle == 0:
+            free_x = int(car_x_position + distance * np.cos(np.radians(scan_angle)))
+            free_y = int(car_y_position + distance * np.sin(np.radians(scan_angle)))
+
+            # - i goes from 0 to steps and i/steps is a percentage from 0 to 1, so we are interpolating between the previous obstacle and the current obstacle and marking all the points in between as obstacles.
+            for i in range(steps):
                 free_interpolated_x = int(car_x_position + (free_x - car_x_position) * i / steps)
                 free_interpolated_y = int(car_y_position + (free_y - car_y_position) * i / steps)
-        if is_obstacle == 0:
-            scan_angle = forward_angle + angle
 
-                prev_x,prev_y = prev_obstacle
+                if 0 <= free_interpolated_x < 100 and 0 <= free_interpolated_y < 100:
+                    grid[free_interpolated_y, free_interpolated_x] = 0  # mark as free space 
 
-                    interpolated_x = int(prev_x + (obstacle_x - prev_x) * i / steps) # if i is 0, then interpolated_x will be prev_x which is the start point, and if i is steps, then interpolated_x will be obstacle_x which is end point. So this loop will fill the grid 
+            prev_obstacle = None
+
+def selectBestDirection(angle_info):
+    best_distance = -1
+    best_angle = None
+
+    for angle, distance, is_obstacle in angle_info:
+        if is_obstacle == 0 and distance > best_distance:
+            best_distance = distance
+            best_angle = angle
+
+    return best_angle, best_distance
+
+def main():
+    try:
+        while True:
+            angle_info = scanAngles()
+            updateGridWithMapping(angle_info)
+            best_angle, best_distance = selectBestDirection(angle_info)
+
+            if best_distance < DangerDistance:
+                px.backward(POWER)
+                time.sleep(0.4)
+                px.stop()
+                
+
+            px.set_dir_servo_angle(best_angle)
+            time.sleep(0.3)
+            px.forward(POWER)
+            time.sleep(0.3)
+
+    except KeyboardInterrupt:
+        print("Stopping car")
+        px.stop()
+
+
+if __name__ == "__main__":
+    main()            if 0 <= obstacle_x < 100 and 0 <= obstacle_y < 100:
+                grid[obstacle_y, obstacle_x] = 1
+
+        scan_angle = forward_angle + angle
+
+
+        if is_obstacle == 1:
+            obstacle_x = int(car_x_position + distance * np.cos(np.radians(scan_angle)))
+            obstacle_y = int(car_y_position + distance * np.sin(np.radians(scan_angle)))
 
