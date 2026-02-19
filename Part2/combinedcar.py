@@ -11,6 +11,9 @@ MIN_CONFIDENCE = 0.25
 FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
 
+STOP_COOLDOWN = 5 # seconds to wait after detecting a stop sign before allowing another stop sign detection
+last_stop_time = 0 # timestamp of the last detected stop sign
+
 interpreter = tflite.Interpreter(model_path=MODEL_PATH, num_threads=4)
 interpreter.allocate_tensors()
 
@@ -130,6 +133,7 @@ def printGridTerminal():
         print(row_str)
 
 def stopSignScanner():
+    global last_stop_time 
     px.set_cam_pan_angle(0)
     time.sleep(0.2)
 
