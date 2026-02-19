@@ -130,6 +130,9 @@ def printGridTerminal():
         print(row_str)
 
 def stopSignScanner():
+    px.set_cam_pan_angle(0)
+    time.sleep(0.2)
+
     frame = picam2.capture_array()
 
     resized = cv2.resize(frame, (input_width, input_height))
@@ -157,10 +160,6 @@ def stopSignScanner():
             print(f"Detected class {class_id} score {score:.2f}")
             
             if class_id == STOP_SIGN_CLASS_ID:
-                px.stop()
-                time.sleep(2)
-                px.forward(20)
-
                 ymin, xmin, ymax, xmax = boxes[i]
 
                 x1 = int(xmin * width)
@@ -169,6 +168,18 @@ def stopSignScanner():
                 y2 = int(ymax * height)
 
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                current_time = time.time()
+                if current_time - last_stop_time > STOP_COOLDOWN:
+                    print(f"Detected STOP SIGN score {score:.2f}. Stopping!")
+                    px.stop()
+                    time.sleep(2)
+                    px.forward(20)
+                    last_stop_time = time.time() # Reset the cooldown timer
+                else:
+                    print("Stop sign detected, but still in cooldown.")
+
+
+
 
 
 def main():
