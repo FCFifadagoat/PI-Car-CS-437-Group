@@ -158,6 +158,7 @@ def stopSignScanner():
             
             if class_id == STOP_SIGN_CLASS_ID:
                 px.stop()
+                time.sleep(2)
                 px.forward(20)
 
                 ymin, xmin, ymax, xmax = boxes[i]
