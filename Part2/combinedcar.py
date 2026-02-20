@@ -182,6 +182,94 @@ def stopSignScanner():
                 else:
                     print("Stop sign detected, but still in cooldown.")
 
+class Node:
+    def __init__(self, x, y, parent=None):
+        self.position = (x, y)
+        self.parent = parent
+        self.g_cost = 0
+        self.h_cost = 0
+        self.f_cost = 0
+
+    def __eq__(self, other):
+        return self.position == other.position
+    
+
+def astar (grid, start, goal):
+    start_node = Node(start[0], start[1])
+    goal_node = Node(goal[0], goal[1])
+    open_list = [start_node]
+    closed_list = []
+
+    while len(open_list) > 0:
+        current_node = open_list[0]
+        current_index = 0
+        for index, item in enumerate (open_list):
+            if item.f_cost < current_node.f_cost:
+                current_node = item
+                current_index = index
+
+        open_list.pop(current_index)
+        closed_list.append(current_node)
+
+        if current_node == goal_node:
+            path = []
+            while current_node is not None:
+                path.append(current_node.position)
+                current_node = current_node.parent
+            return path[::-1]
+        
+        directions = [(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]
+        children = []
+        for new_position in directions:
+            node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
+
+            if node_position[0] > (len(grid) - 1) or node_position[0] < 0 or node_position[1] > (len(grid[len(grid)-1]) - 1) or node_position[1] < 0:
+                continue
+
+            if grid[node_position[0]][node_position[1]] != 0:
+                continue
+
+            new_node = Node(node_position[0], node_position[1], current_node)
+            children.append(new_node)
+        
+        for child in children:
+            if child in closed_list:
+                continue
+
+            child.g_cost = current_node.g_cost + 1
+            child.h_cost = np.sqrt(((child.position[0] - goal_node.position[0]) ** 2) + ((child.position[1] - goal_node.position[1]) ** 2))
+            child.f_cost = child.g_cost + child.h_cost
+
+            skipchild = False
+            for open_node in open_list:
+                if child == open_node and child.g_cost > open_node.g_cost:
+                    skipchild = True
+                    break
+
+            if not skipchild:
+                open_list.append(child)
+    return None
+
+def drivepath(path):
+    if not path or len(path) < 2:
+        print("No path available")
+        return
+    
+    next_step = path[1]
+    dx = next_step[0] - origin_x
+    dy = next_step[1] - origin_y
+
+    angle_rad = np.arctan2(dy, dx)
+    angle_deg = np.degrees(angle_rad)
+
+    px.set_dir_servo_angle(angle_deg)
+    px.forward(10) #set low speed
+    
+
+
+def findpath():
+
+
 
 
 
