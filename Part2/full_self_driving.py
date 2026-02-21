@@ -348,9 +348,9 @@ def executePath(path, steps_to_run=MOVE_STEPS):
 
         while elapsed < move_time:
             if STOP_SIGN_DETECTED:
-                print("Stopping for 2 seconds at stop sign...")
+                print(f"Stopping for {STOP_SIGN_WAITING_TIME} seconds at stop sign...")
                 px.stop()
-                time.sleep(2)
+                time.sleep(STOP_SIGN_WAITING_TIME)
                 STOP_SIGN_DETECTED = False
                 return
 
