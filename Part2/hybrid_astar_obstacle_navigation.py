@@ -14,10 +14,11 @@ counter = itertools.count()
 
 MAP_SIZE = 200
 STEP_CM = 5 # Distance (cm) moved per planning step
+MOVE_STEPS = 10 # how many steps in the path the car should move at a time
 
 ANGLES = np.arange(-45, 46, 5)
-MIN_SCAN_DISTANCE = 8
-MAX_SCAN_DISTANCE = 80
+MIN_SCAN_DISTANCE = 4
+MAX_SCAN_DISTANCE = 60
 
 # VEHICLE PARAMETERS
 
@@ -50,11 +51,11 @@ robot_pose = [0.0, 0.0, 0.0]
 # UTILITY FUNCTIONS
 
 # checks if provided x, y coordinate is inside the map
-def in_bounds(x, y):
+def inBounds(x, y):
     return 0 <= x < MAP_SIZE and 0 <= y < MAP_SIZE
 
 # normalize angle to range [-pi, pi]
-def normalize_angle(angle):
+def normalizeAngle(angle):
     return (angle + math.pi) % (2 * math.pi) - math.pi
 
 # Euclidean distance heuristic for A* algorithm
@@ -77,7 +78,7 @@ def getDistance(samples=3):
     return float(np.median(readings))
 
 
-def markObstacle(grid_x, grid_y, radius=5):
+def markObstacle(grid_x, grid_y, radius=10):
     x_min = max(0, grid_x - radius)
     x_max = min(MAP_SIZE, grid_x + radius)
     y_min = max(0, grid_y - radius)
@@ -109,7 +110,7 @@ def scanEnvironment():
         grid_x = int(origin_x + obj_x)
         grid_y = int(origin_y + obj_y)
 
-        if in_bounds(grid_x, grid_y):
+        if inBounds(grid_x, grid_y):
             markObstacle(grid_x, grid_y)
 
 
@@ -117,7 +118,7 @@ def scanEnvironment():
 
 # ensures that we can only plan for motions that can be done by the picar
 # returns position (x, y) and rotation (yaw) of car after moving STEP_CM
-def simulate_motion(x, y, yaw, steer_deg):
+def simulateMotion(x, y, yaw, steer_deg):
     steer = math.radians(steer_deg)
 
     # straight motion case when steer is close to 0
@@ -131,15 +132,15 @@ def simulate_motion(x, y, yaw, steer_deg):
     nx = x + R * (math.sin(yaw + dtheta) - math.sin(yaw))
     ny = y - R * (math.cos(yaw + dtheta) - math.cos(yaw))
 
-    return nx, ny, normalize_angle(yaw + dtheta)
+    return nx, ny, normalizeAngle(yaw + dtheta)
 
 
 # checks if the simulated position collides with an obstacle in the grid
-def is_collision(x, y):
+def isCollision(x, y):
     gx = int(origin_x + x)
     gy = int(origin_y + y)
 
-    if not in_bounds(gx, gy):
+    if not inBounds(gx, gy):
         return True # treat out-of-bounds as collision
 
     return grid[gy, gx] == 1
@@ -168,7 +169,7 @@ class Node:
 
 
 # Reconstruct full path from goal node back to start
-def reconstruct_path(node):
+def reconstructPath(node):
     path = []
     while node:
         path.append((node.x, node.y))
@@ -177,8 +178,8 @@ def reconstruct_path(node):
 
 
 # Hybrid A* search
-def hybrid_astar(goal_local):
-    start = Node(0, 0, 0, 0)
+def hybridAstar(goal_local, local_start=(0, 0, 0)):
+    start = Node(*local_start, cost=0)
 
     open_list = []
     heapq.heappush(open_list, (0, next(counter), start))
@@ -201,7 +202,7 @@ def hybrid_astar(goal_local):
 
         # Goal check
         if heuristic(current.x, current.y, goal_local) < GOAL_TOLERANCE:
-            return reconstruct_path(current)
+            return reconstructPath(current)
 
         key = current.key()
         if key in visited:
@@ -210,11 +211,11 @@ def hybrid_astar(goal_local):
 
         # Expand using discrete steering angles
         for steer in STEER_SET:
-            nx, ny, nyaw = simulate_motion(
+            nx, ny, nyaw = simulateMotion(
                 current.x, current.y, current.yaw, steer
             )
 
-            if is_collision(nx, ny):
+            if isCollision(nx, ny):
                 continue
 
             cost = current.cost + STEP_CM
@@ -227,7 +228,7 @@ def hybrid_astar(goal_local):
 
 
 # converts global goal into robot's local coordinates
-def get_local_goal(target_goal):
+def getLocalGoal(target_goal):
     x, y, yaw = robot_pose
 
     dx = target_goal[0] - x
@@ -244,28 +245,18 @@ def get_local_goal(target_goal):
 
 # executes a limited number of path segments
 
-def execute_path(path, steps_to_run=None):
-    steps_executed = 0
-    total_segments = len(path) - 1
+def executePath(path, steps_to_run=MOVE_STEPS):
+    num_steps = min(steps_to_run, len(path) - 1)
 
-    if total_segments <= 0:
-        return 0
-
-    if steps_to_run is None:
-        steps_to_run = total_segments
-
-    segments_to_execute = min(steps_to_run, total_segments)
-
-    for i in range(1, segments_to_execute + 1):
+    for i in range(1, num_steps + 1):
         x, y, yaw = robot_pose
 
         dx = path[i][0] - path[i - 1][0]
         dy = path[i][1] - path[i - 1][1]
 
         segment_yaw = math.atan2(dy, dx)
-        yaw_error = normalize_angle(segment_yaw - yaw)
+        yaw_error = normalizeAngle(segment_yaw - yaw)
 
-        # Convert heading error to steering angle
         steer_angle = np.clip(
             math.degrees(math.atan2(WHEELBASE * yaw_error, STEP_CM)),
             -MAX_STEER,
@@ -279,15 +270,10 @@ def execute_path(path, steps_to_run=None):
         time.sleep(move_time)
         px.stop()
 
-        # Update global pose estimate
-        nx, ny, nyaw = simulate_motion(0, 0, yaw, steer_angle)
-        robot_pose[0] += nx
-        robot_pose[1] += ny
+        nx, ny, nyaw = simulateMotion(x, y, yaw, steer_angle)
+        robot_pose[0] = nx
+        robot_pose[1] = ny
         robot_pose[2] = nyaw
-
-        steps_executed += 1
-
-    return steps_executed
 
 
 def printGridTerminal(path=None, goal=None):
@@ -302,14 +288,14 @@ def printGridTerminal(path=None, goal=None):
         for px_, py_ in path:
             gx = int(round(origin_x + px_))
             gy = int(round(origin_y + py_))
-            if in_bounds(gx, gy):
+            if inBounds(gx, gy):
                 path_set.add((gy, gx))
 
     goal_cell = None
     if goal is not None:
-        gx = int(round(origin_x + goal[0]))
-        gy = int(round(origin_y + goal[1]))
-        if in_bounds(gx, gy):
+        gx = int(round(origin_x + robot_pose[0] + goal[0]))
+        gy = int(round(origin_y + robot_pose[1] + goal[1]))
+        if inBounds(gx, gy):
             goal_cell = (gy, gx)
 
     for row in range(MAP_SIZE):
@@ -335,27 +321,28 @@ def printGridTerminal(path=None, goal=None):
 
 def main():
     target_goal = (125, 50)
+    local_start = (0, 0, 0)
 
     try:
         while True:
             print("Scanning")
             scanEnvironment()
 
-            local_goal = get_local_goal(target_goal)
+            local_goal = getLocalGoal(target_goal)
 
             if math.hypot(*local_goal) < GOAL_TOLERANCE:
                 print("GOAL REACHED!")
                 break
 
             print("Planning")
-            path = hybrid_astar(local_goal)
+            path = hybridAstar(local_goal, local_start=local_start)
             print(path)
 
             printGridTerminal(path, local_goal)
 
             if path:
-                print("Executing 5 steps")
-                execute_path(path, 5)
+                print("Executing")
+                executePath(path, MOVE_STEPS)
             else:
                 print("No path found")
 
