@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CS498: IoT -- Lab 2 Dashboard</title>
+    <script src="index.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .controls { margin-bottom: 30px; }
+        .btn { padding: 10px 20px; margin: 5px; font-size: 16px; cursor: pointer; }
+        .stats-pane { border: 1px solid #000; padding: 20px; width: 300px; }
+    </style>
+</head>
+<body>
+    <h1>Self-Driving Car Remote</h1>
+    
+    <div class="controls">
+        <h3>Directional Controls</h3>
+        <button class="btn" onclick="sendCommand('forward')">Forward</button><br>
+        <button class="btn" onclick="sendCommand('left')">Left</button>
+        <button class="btn" onclick="sendCommand('stop')">Stop</button>
+        <button class="btn" onclick="sendCommand('right')">Right</button><br>
+        <button class="btn" onclick="sendCommand('backward')">Backward</button>
+    </div>
+
+    <div class="stats-pane">
+        <h3>Car Information</h3>
+        <p>Obstacle Distance: <span id="distance">--</span> cm</p>
+        <p>Moving: <span id="moving">--</span></p>
+        <p>Speed: <span id="speed">--</span></p>
+    </div>
+</body>
+</html>
