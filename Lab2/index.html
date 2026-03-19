@@ -14,6 +14,19 @@
     <h1>Self-Driving Car Remote</h1>
     
     <div class="controls">
+        <h3>Connection Settings</h3>
+        <label><input type="radio" name="conn_type" value="wifi" checked onchange="updateConnType()"> WiFi</label>
+        <label><input type="radio" name="conn_type" value="bluetooth" onchange="updateConnType()"> Bluetooth</label>
+        <br><br>
+        <div id="wifi_config">
+            Pi IP: <input type="text" id="pi_ip" value="192.168.0.209">
+        </div>
+        <div id="bt_config" style="display:none;">
+            Pi MAC: <input type="text" id="pi_mac" value="E4:5F:01:XX:XX:XX">
+        </div>
+    </div>
+
+    <div class="controls">
         <h3>Directional Controls</h3>
         <button class="btn" onclick="sendCommand('forward')">Forward</button><br>
         <button class="btn" onclick="sendCommand('left')">Left</button>
@@ -27,6 +40,16 @@
         <p>Obstacle Distance: <span id="distance">--</span> cm</p>
         <p>Moving: <span id="moving">--</span></p>
         <p>Speed: <span id="speed">--</span></p>
+        <p>Mode: <span id="current_mode">WiFi</span></p>
     </div>
+
+    <script>
+        function updateConnType() {
+            const type = document.querySelector('input[name="conn_type"]:checked').value;
+            document.getElementById("wifi_config").style.display = (type === 'wifi' ? 'block' : 'none');
+            document.getElementById("bt_config").style.display = (type === 'bluetooth' ? 'block' : 'none');
+            document.getElementById("current_mode").innerHTML = type === 'wifi' ? 'WiFi' : 'Bluetooth';
+        }
+    </script>
 </body>
 </html>
