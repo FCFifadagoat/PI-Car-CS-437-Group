@@ -12,6 +12,12 @@ jobs:
       - uses: pixta-dev/repository-mirroring-action@v1.1.1
         with:
           target_repo_url:
-            git@gitlab.com:cs4372591012/lab2.git
+            git@gitlab.com:YOUR_GITLAB_USERNAME/YOUR_REPO_NAME.git
           ssh_private_key:
-            b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZWQyNTUxOQAAACD+EL1oEv5MADqGCi3Ol6aKDHbdtPN8C7+kk9AxnhegfwAAAJhMVO7cTFTu3AAAAAtzc2gtZWQyNTUxOQAAACD+EL1oEv5MADqGCi3Ol6aKDHbdtPN8C7+kk9AxnhegfwAAAEAgId/oVGQ7cQ/t7cgyFszMxVhlWfVUol30hSqB9UxE3f4QvWgS/kwAOoYKLc6XpooMdt2083wLv6ST0DGeF6B/AAAAEGtpYW5ATWFjLmh0LmhvbWUBAgMEBQ==
+            ${{ -----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+QyNTUxOQAAACD+EL1oEv5MADqGCi3Ol6aKDHbdtPN8C7+kk9AxnhegfwAAAJhMVO7cTFTu
+3AAAAAtzc2gtZWQyNTUxOQAAACD+EL1oEv5MADqGCi3Ol6aKDHbdtPN8C7+kk9Axnhegfw
+AAAEAgId/oVGQ7cQ/t7cgyFszMxVhlWfVUol30hSqB9UxE3f4QvWgS/kwAOoYKLc6XpooM
+dt2083wLv6ST0DGeF6B/AAAAEGtpYW5ATWFjLmh0LmhvbWUBAgMEBQ==
+-----END OPENSSH PRIVATE KEY----- }}
