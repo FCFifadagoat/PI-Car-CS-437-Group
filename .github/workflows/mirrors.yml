@@ -1,0 +1,17 @@
+name: Mirror to GitLab
+
+on: [push, delete]
+
+jobs:
+  git-mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pixta-dev/repository-mirroring-action@v1.1.1
+        with:
+          target_repo_url:
+            git@gitlab.com:cs4372591012/lab2.git
+          ssh_private_key:
+            b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZWQyNTUxOQAAACD+EL1oEv5MADqGCi3Ol6aKDHbdtPN8C7+kk9AxnhegfwAAAJhMVO7cTFTu3AAAAAtzc2gtZWQyNTUxOQAAACD+EL1oEv5MADqGCi3Ol6aKDHbdtPN8C7+kk9AxnhegfwAAAEAgId/oVGQ7cQ/t7cgyFszMxVhlWfVUol30hSqB9UxE3f4QvWgS/kwAOoYKLc6XpooMdt2083wLv6ST0DGeF6B/AAAAEGtpYW5ATWFjLmh0LmhvbWUBAgMEBQ==
