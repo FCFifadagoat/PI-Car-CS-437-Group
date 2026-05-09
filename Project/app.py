@@ -27,12 +27,30 @@ def save_data(data):
     with open(DATA_FILE, 'w') as f:
         json.dump(data, f, indent=4)
 
-def water_monitor_loop():
+def dispense_food_until_weight(target_weight, timeout=15):
+    """Dispense food until the target weight is reached or timeout occurs."""
+    start_time = time.time()
+    food_dispenser.open()
+    try:
+        while True:
+            current_weight = food_sensor.get_weight()
+            if current_weight >= target_weight:
+                print(f"Target food weight {target_weight}g reached.")
+                break
+            if time.time() - start_time > timeout:
+                print("Dispense food timeout reached. Closing to prevent overflow.")
+                break
+            time.sleep(0.5)
+    finally:
+        food_dispenser.close()
+
+def system_monitor_loop():
     while True:
         try:
-            level = water_sensor.get_water_level()
-            if level < 20.0:
-                print(f"Water level low ({level}%). Auto-dispensing water...")
+            # Check water
+            water_level = water_sensor.get_water_level()
+            if water_level < 20.0:
+                print(f"Water level low ({water_level}%). Auto-dispensing water...")
                 water_dispenser.dispense(duration=3)
                 
                 data = load_data()
@@ -42,12 +60,27 @@ def water_monitor_loop():
                     "action": "auto_dispense"
                 })
                 save_data(data)
+                
+            # Check food
+            food_weight = food_sensor.get_weight()
+            if food_weight < 50.0:
+                print(f"Food weight low ({food_weight}g). Auto-dispensing food to 200g...")
+                dispense_food_until_weight(target_weight=200)
+                
+                data = load_data()
+                data["history"].append({
+                    "timestamp": time.time(),
+                    "type": "food",
+                    "action": "auto_dispense"
+                })
+                save_data(data)
+                
         except Exception as e:
-            print(f"Error in water monitor: {e}")
+            print(f"Error in system monitor: {e}")
             
         time.sleep(300)
 
-monitor_thread = threading.Thread(target=water_monitor_loop, daemon=True)
+monitor_thread = threading.Thread(target=system_monitor_loop, daemon=True)
 monitor_thread.start()
 
 
@@ -80,7 +113,9 @@ def dispense_water():
 
 @app.route('/api/dispense/food', methods=['POST'])
 def dispense_food():
-    food_dispenser.dispense()
+    current_weight = food_sensor.get_weight()
+    target = current_weight + 50.0 # Dispense 50 more grams manually
+    dispense_food_until_weight(target_weight=target)
     
     data = load_data()
     data["history"].append({

@@ -17,11 +17,12 @@
         </header>
 
         <main class="cards-container">
-            <div class="card glass">
+            <div id="water-card" class="card glass">
                 <div class="card-header">
                     <h2>Water Status</h2>
-                    <span class="status-indicator active"></span>
+                    <span id="water-indicator" class="status-indicator active"></span>
                 </div>
+                <div id="water-alert" class="alert-text hidden">Reservoir Low!</div>
                 <div class="metric">
                     <span id="water-level-text" class="metric-value">--%</span>
                 </div>
@@ -31,11 +32,12 @@
                 <button id="dispense-water-btn" class="btn primary-btn">Dispense Water</button>
             </div>
 
-            <div class="card glass">
+            <div id="food-card" class="card glass">
                 <div class="card-header">
                     <h2>Food Status</h2>
-                    <span class="status-indicator active"></span>
+                    <span id="food-indicator" class="status-indicator active"></span>
                 </div>
+                <div id="food-alert" class="alert-text hidden">Reservoir Low!</div>
                 <div class="metric">
                     <span id="food-weight-text" class="metric-value">-- g</span>
                 </div>

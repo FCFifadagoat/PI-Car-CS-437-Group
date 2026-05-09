@@ -11,15 +11,14 @@ class FoodDispenser:
         if not MOCK_MODE:
             self.servo = Servo(servo_pin)
             
-    def dispense(self):
-        """Dispense food by actuating the servo."""
-        print("Actuating servo to dispense food...")
+    def open(self):
+        """Open the food dispenser."""
+        print("Opening food dispenser...")
         if not MOCK_MODE:
             self.servo.max()
-            time.sleep(1)
-            self.servo.min()
-            time.sleep(1)
+
+    def close(self):
+        """Close the food dispenser."""
+        print("Closing food dispenser...")
+        if not MOCK_MODE:
             self.servo.mid() # return to closed
-        else:
-            time.sleep(2)
-        print("Done dispensing food.")

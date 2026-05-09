@@ -21,6 +21,37 @@ document.addEventListener("DOMContentLoaded", () => {
             waterLevelText.textContent = `${data.water_level}%`;
             waterLevelBar.style.width = `${data.water_level}%`;
             foodWeightText.textContent = `${data.food_weight} g`;
+
+            // Water alerts
+            const waterCard = document.getElementById('water-card');
+            const waterIndicator = document.getElementById('water-indicator');
+            const waterAlert = document.getElementById('water-alert');
+            
+            if (data.water_level <= 20) {
+                waterCard.classList.add('warning-card');
+                waterIndicator.classList.add('warning');
+                waterAlert.classList.remove('hidden');
+            } else {
+                waterCard.classList.remove('warning-card');
+                waterIndicator.classList.remove('warning');
+                waterAlert.classList.add('hidden');
+            }
+
+            // Food alerts
+            const foodCard = document.getElementById('food-card');
+            const foodIndicator = document.getElementById('food-indicator');
+            const foodAlert = document.getElementById('food-alert');
+            
+            if (data.food_weight <= 50) {
+                foodCard.classList.add('warning-card');
+                foodIndicator.classList.add('warning');
+                foodAlert.classList.remove('hidden');
+            } else {
+                foodCard.classList.remove('warning-card');
+                foodIndicator.classList.remove('warning');
+                foodAlert.classList.add('hidden');
+            }
+            
         } catch (err) {
             console.error("Error fetching status:", err);
         }

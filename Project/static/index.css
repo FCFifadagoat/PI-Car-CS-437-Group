@@ -179,3 +179,35 @@ header p {
 #activity-list li:last-child {
     border-bottom: none;
 }
+
+.hidden {
+    display: none !important;
+}
+
+.alert-text {
+    color: #ef4444;
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-align: center;
+    background: rgba(239, 68, 68, 0.1);
+    padding: 0.5rem;
+    border-radius: 8px;
+    margin-top: -0.5rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.warning-card {
+    border-color: rgba(239, 68, 68, 0.5);
+    box-shadow: 0 8px 32px 0 rgba(239, 68, 68, 0.15);
+}
+
+.status-indicator.warning {
+    background-color: #ef4444;
+    box-shadow: 0 0 10px #ef4444;
+}
