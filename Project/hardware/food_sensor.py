@@ -17,7 +17,7 @@ class FoodSensor:
         if not MOCK_MODE:
             self.hx = HX711(dout_pin, pd_sck_pin)
             self.hx.set_reading_format("MSB", "MSB")
-            self.hx.set_reference_unit(114) # Needs calibration
+            self.hx.set_reference_unit(114) # Needs calibration - can be found using raw value/known weight 
             self.hx.reset()
             self.hx.tare()
             
