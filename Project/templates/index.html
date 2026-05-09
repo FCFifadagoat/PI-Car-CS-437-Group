@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Pet Feeder Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/index.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <header>
+            <h1>Pet Feeder Station</h1>
+            <p>Monitor and feed your pet remotely</p>
+        </header>
+
+        <main class="cards-container">
+            <div class="card glass">
+                <div class="card-header">
+                    <h2>Water Status</h2>
+                    <span class="status-indicator active"></span>
+                </div>
+                <div class="metric">
+                    <span id="water-level-text" class="metric-value">--%</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div id="water-level-bar" class="progress-bar water-bar"></div>
+                </div>
+                <button id="dispense-water-btn" class="btn primary-btn">Dispense Water</button>
+            </div>
+
+            <div class="card glass">
+                <div class="card-header">
+                    <h2>Food Status</h2>
+                    <span class="status-indicator active"></span>
+                </div>
+                <div class="metric">
+                    <span id="food-weight-text" class="metric-value">-- g</span>
+                </div>
+                <button id="dispense-food-btn" class="btn primary-btn">Dispense Food</button>
+            </div>
+        </main>
+
+        <section class="activity-section glass">
+            <h2>Recent Activity</h2>
+            <ul id="activity-list">
+                <li>System initialized</li>
+            </ul>
+        </section>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>
