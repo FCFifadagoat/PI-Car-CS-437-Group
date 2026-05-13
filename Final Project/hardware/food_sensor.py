@@ -4,7 +4,6 @@ import random
 MOCK_MODE = platform.system() != "Linux"
 
 if not MOCK_MODE:
-    # Requires HX711 library
     try:
         from hx711 import HX711
     except ImportError:
@@ -17,12 +16,11 @@ class FoodSensor:
         if not MOCK_MODE:
             self.hx = HX711(dout_pin, pd_sck_pin)
             self.hx.set_reading_format("MSB", "MSB")
-            self.hx.set_reference_unit(114) # Needs calibration - can be found using raw value/known weight 
+            self.hx.set_reference_unit(114)  # calibrated by dividing raw value by known weight
             self.hx.reset()
             self.hx.tare()
-            
+
     def get_weight(self):
-        """Returns the food weight in grams."""
         if MOCK_MODE:
             self.mock_weight += random.uniform(-1, 0.4)
             self.mock_weight = max(0, self.mock_weight)

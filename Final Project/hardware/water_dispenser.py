@@ -9,10 +9,10 @@ if not MOCK_MODE:
 class WaterDispenser:
     def __init__(self, relay_pin=17):
         if not MOCK_MODE:
+            # active_high=False because relay triggers on LOW signal
             self.relay = OutputDevice(relay_pin, active_high=False, initial_value=False)
-            
+
     def dispense(self, duration=3):
-        """Dispense water for a fixed duration."""
         print(f"Dispensing water for {duration} seconds...")
         if not MOCK_MODE:
             self.relay.on()
