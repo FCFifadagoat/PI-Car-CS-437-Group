@@ -4,7 +4,12 @@ import platform
 import threading
 import time
 from flask import Flask, render_template, jsonify, request, Response
-import cv2
+
+try:
+    import cv2
+    CV2_AVAILABLE = True
+except ImportError:
+    CV2_AVAILABLE = False
 
 # run on mac for testing without hardware
 MOCK_MODE = platform.system() != "Linux"
