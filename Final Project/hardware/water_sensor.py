@@ -16,7 +16,7 @@ class WaterSensor:
 
     def get_water_level(self):
         if MOCK_MODE:
-            self.mock_level_ml += random.uniform(-5, 2.5)
+            self.mock_level_ml += random.uniform(-10, 4)
             self.mock_level_ml = max(0, min(BOWL_VOLUME_ML, self.mock_level_ml))
             return round(self.mock_level_ml, 2)
         else:

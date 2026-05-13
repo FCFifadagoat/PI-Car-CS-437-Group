@@ -1,59 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Pet Feeder Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/index.css">
+    <title>Pet Feeder</title>
 </head>
-
 <body>
-    <div class="dashboard-container">
-        <header>
-            <h1>Pet Feeder Station</h1>
-            <p>Monitor and feed your pet remotely</p>
-        </header>
+    <h1>Pet Feeder</h1>
 
-        <main class="cards-container">
-            <div id="water-card" class="card glass">
-                <div class="card-header">
-                    <h2>Water Status</h2>
-                    <span id="water-indicator" class="status-indicator active"></span>
-                </div>
-                <div id="water-alert" class="alert-text hidden">Reservoir Low!</div>
-                <div class="metric">
-                    <span id="water-level-text" class="metric-value">--%</span>
-                </div>
-                <div class="progress-bar-container">
-                    <div id="water-level-bar" class="progress-bar water-bar"></div>
-                </div>
-                <button id="dispense-water-btn" class="btn primary-btn">Dispense Water</button>
-            </div>
+    <img src="/video_feed" alt="Live camera feed" style="max-width: 640px; display: block;">
 
-            <div id="food-card" class="card glass">
-                <div class="card-header">
-                    <h2>Food Status</h2>
-                    <span id="food-indicator" class="status-indicator active"></span>
-                </div>
-                <div id="food-alert" class="alert-text hidden">Reservoir Low!</div>
-                <div class="metric">
-                    <span id="food-weight-text" class="metric-value">-- g</span>
-                </div>
-                <button id="dispense-food-btn" class="btn primary-btn">Dispense Food</button>
-            </div>
-        </main>
+    <h2>Sensors</h2>
+    <p>Water: <span id="water-level-text">--</span> <button onclick="dispense('water')">Dispense Water</button></p>
+    <p>Food: <span id="food-weight-text">--</span> <button onclick="dispense('food')">Dispense Food</button></p>
 
-        <section class="activity-section glass">
-            <h2>Recent Activity</h2>
-            <ul id="activity-list">
-                <li>System initialized</li>
-            </ul>
-        </section>
-    </div>
+    <h2>Consumption</h2>
+    <table border="1" cellpadding="6">
+        <tr><th></th><th>Cat</th><th>Dog</th></tr>
+        <tr><td>Food</td><td id="cat-food">0.0 g</td><td id="dog-food">0.0 g</td></tr>
+        <tr><td>Water</td><td id="cat-water">0.0 mL</td><td id="dog-water">0.0 mL</td></tr>
+    </table>
 
-    <script src="/static/app.js"></script>
+    <script>
+        async function fetchStatus() {
+            const data = await fetch("/api/status").then(r => r.json());
+            document.getElementById("water-level-text").textContent = data.water_level + " mL";
+            document.getElementById("food-weight-text").textContent = data.food_weight + " g";
+            document.getElementById("cat-food").textContent = data.consumption.food.cat.toFixed(1) + " g";
+            document.getElementById("dog-food").textContent = data.consumption.food.dog.toFixed(1) + " g";
+            document.getElementById("cat-water").textContent = data.consumption.water.cat.toFixed(1) + " mL";
+            document.getElementById("dog-water").textContent = data.consumption.water.dog.toFixed(1) + " mL";
+        }
+        async function dispense(type) {
+            await fetch(`/api/dispense/${type}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ duration: 3 })
+            });
+            fetchStatus();
+        }
+
+        fetchStatus();
+        setInterval(fetchStatus, 2000);
+    </script>
 </body>
-
 </html>

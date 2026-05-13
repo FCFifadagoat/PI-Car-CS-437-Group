@@ -17,17 +17,16 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const res = await fetch("/api/status");
             const data = await res.json();
-            
-            waterLevelText.textContent = `${data.water_level}%`;
-            waterLevelBar.style.width = `${data.water_level}%`;
+
+            waterLevelText.textContent = `${data.water_level} mL`;
+            waterLevelBar.style.width = `${data.water_level / 500 * 100}%`;
             foodWeightText.textContent = `${data.food_weight} g`;
 
-            // Water alerts
             const waterCard = document.getElementById('water-card');
             const waterIndicator = document.getElementById('water-indicator');
             const waterAlert = document.getElementById('water-alert');
-            
-            if (data.water_level <= 20) {
+
+            if (data.water_level <= 100) {
                 waterCard.classList.add('warning-card');
                 waterIndicator.classList.add('warning');
                 waterAlert.classList.remove('hidden');
@@ -37,11 +36,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 waterAlert.classList.add('hidden');
             }
 
-            // Food alerts
             const foodCard = document.getElementById('food-card');
             const foodIndicator = document.getElementById('food-indicator');
             const foodAlert = document.getElementById('food-alert');
-            
+
             if (data.food_weight <= 50) {
                 foodCard.classList.add('warning-card');
                 foodIndicator.classList.add('warning');
@@ -51,7 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 foodIndicator.classList.remove('warning');
                 foodAlert.classList.add('hidden');
             }
-            
+
         } catch (err) {
             console.error("Error fetching status:", err);
         }
@@ -60,17 +58,17 @@ document.addEventListener("DOMContentLoaded", () => {
     dispenseWaterBtn.addEventListener("click", async () => {
         dispenseWaterBtn.disabled = true;
         dispenseWaterBtn.textContent = "Dispensing...";
-        
+
         try {
             const res = await fetch("/api/dispense/water", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ duration: 3 })
             });
-            if(res.ok) {
+            if (res.ok) {
                 logActivity("Water dispensed manually.");
             }
-        } catch(err) {
+        } catch (err) {
             logActivity("Failed to dispense water.");
         } finally {
             dispenseWaterBtn.disabled = false;
@@ -82,13 +80,13 @@ document.addEventListener("DOMContentLoaded", () => {
     dispenseFoodBtn.addEventListener("click", async () => {
         dispenseFoodBtn.disabled = true;
         dispenseFoodBtn.textContent = "Dispensing...";
-        
+
         try {
             const res = await fetch("/api/dispense/food", { method: "POST" });
-            if(res.ok) {
+            if (res.ok) {
                 logActivity("Food dispensed manually.");
             }
-        } catch(err) {
+        } catch (err) {
             logActivity("Failed to dispense food.");
         } finally {
             dispenseFoodBtn.disabled = false;
