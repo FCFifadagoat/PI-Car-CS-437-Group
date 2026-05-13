@@ -18,6 +18,4 @@ class WaterDispenser:
             self.relay.on()
             time.sleep(duration)
             self.relay.off()
-        else:
-            time.sleep(duration)
         print("Done dispensing water.")

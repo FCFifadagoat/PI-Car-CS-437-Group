@@ -24,7 +24,7 @@ class FoodSensor:
     def get_weight(self):
         """Returns the food weight in grams."""
         if MOCK_MODE:
-            self.mock_weight += random.uniform(-5, 2)
+            self.mock_weight += random.uniform(-1, 0.4)
             self.mock_weight = max(0, self.mock_weight)
             return round(self.mock_weight, 2)
         else:

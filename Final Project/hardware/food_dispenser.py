@@ -21,4 +21,4 @@ class FoodDispenser:
         """Close the food dispenser."""
         print("Closing food dispenser...")
         if not MOCK_MODE:
-            self.servo.mid() # return to closed
+            self.servo.mid()
